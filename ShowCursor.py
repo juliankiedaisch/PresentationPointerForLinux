@@ -15,7 +15,7 @@ class Cursor ():
         self.__display = display.Display()
         self.__color = '#ffa348'
         self.__size = 30
-        self.__alpha = 0.3
+        self.__alpha = 0.6
         self.__intervall = 0.01
         
         self.__createWindow()
@@ -93,15 +93,23 @@ class Cursor ():
 
     def __run(self):
         message = None
+        index = 0
         while self.__status:
             coord = self.__display.screen().root.query_pointer()._data
-            #print(str(coord["root_x"]) + ":" + str(coord["root_y"]))
+            print(1)
+            print(str(coord["root_x"]) + ":" + str(coord["root_y"]))
+            print(2)
             self.__window.geometry("+" + str(coord["root_x"]+10) + "+" + str(coord["root_y"]+10))
+            print(3)
             time.sleep(self.__intervall)
+            print(4)
+            print(index)
+            index +=1
 
 def windowClose():
     try:
         cursor.destroy()
+        win2.destroy()
         win.destroy()
     except:
         pass
@@ -125,6 +133,7 @@ def changeColor():
     if cursor:
         colors = askcolor(title="Tkinter Color Chooser")
         cursor.setColor(colors[1])
+        win2.configure(bg=colors[1])
 
 
 
@@ -135,13 +144,13 @@ DEFAULT_SIZE = StringVar(win)
 DEFAULT_SIZE.set(30)
 DEFAULT_SIZE.trace("w", changeSize)
 DEFAULT_ALPHA = StringVar(win)
-DEFAULT_ALPHA.set(30)
+DEFAULT_ALPHA.set(60)
 DEFAULT_ALPHA.trace("w", changeAlpha)
 DEFAULT_INTERVALL = StringVar(win)
 DEFAULT_INTERVALL.set(100)
 DEFAULT_INTERVALL.trace("w", changeIntervall)
 
-win.attributes('-topmost',True)
+#win.attributes('-topmost',True)
 
 win.geometry("280x180")
 win.resizable(False, False)
@@ -174,6 +183,15 @@ labelColor = Label(win, text="Choose Color for Cursor: ").grid(column=0, row=3, 
 
 #Quit
 buttonQuit = Button(win, text='Quit', command=windowClose, bg="red").grid(column=0, row=5, sticky=E, padx=5, pady=5)
+
+#Cursor Activation Window
+win2 = Toplevel(win)
+win2.geometry("20x20")
+win2.geometry("+0+0")
+win2.resizable(False, False)
+win2.attributes('-topmost',True)
+win2.overrideredirect(True)
+win2.configure(bg="#ffa348")
 
 #Setting the geometry of window
 cursor = Cursor(win)
