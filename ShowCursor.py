@@ -8,7 +8,7 @@ from libinput import LibInput, constant, event
 
 cursor = None
 global win_open
-win_open = True
+win_open = False
 
 class Cursor ():
     def __init__(self, root):
@@ -229,7 +229,7 @@ def click_handler(*args):
 
 #Setting Activation Window
 win2 = Toplevel(win)
-win2.geometry("30x30")
+win2.geometry("50x30")
 win2.geometry("+0+0")
 win2.resizable(False, False)
 win2.attributes('-topmost',True)
@@ -243,6 +243,7 @@ cursor = Cursor(win)
 cursor.start()
 
 win.protocol("WM_DELETE_WINDOW", click_handler)
+win.withdraw()
 win.mainloop()
 
 cursor.destroy()
