@@ -34,9 +34,11 @@ class Cursor ():
         self.__updateWindow()
         self.__window.lift()
         self.__updateWindow()
+        self.windowHide()
 
     def __destroyWindow(self):
         if self.__window:
+            self.windowShow()
             try:
                 self.__window.destroy()
             except:
@@ -99,6 +101,11 @@ class Cursor ():
     def setIntervall(self, intervall):
         self.__intervall = intervall
 
+    def windowHide(self):
+        self.__window.withdraw()
+    def windowShow(self):
+        self.__window.deiconify()
+
     def __run(self):
         message = None
         index = 0
@@ -107,21 +114,28 @@ class Cursor ():
                 for xevent in self.__li.get_event(self.__intervall):
                     if xevent.type == constant.Event.TOUCH_MOTION:
                         tool = xevent.get_touch_event()
-                        print(str(int(tool.get_x())) + ":" + str(int(tool.get_y())))
                         self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))
 
-                    if xevent.type == constant.Event.POINTER_MOTION_ABSOLUTE:
+                    elif xevent.type == constant.Event.POINTER_MOTION_ABSOLUTE:
                         tool = xevent.get_pointer_event()
-                        print(str(int(tool.get_x())) + ":" + str(int(tool.get_y())))
                         self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))
 
-                    if xevent.type == constant.Event.TABLET_TOOL_AXIS:
+                    elif xevent.type == constant.Event.TABLET_TOOL_AXIS:
                         tool = xevent.get_tablet_tool_event()
-                        print(str(int(tool.get_x())) + ":" + str(int(tool.get_y())))
-                        self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))            
+                        self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))
+                    elif xevent.type == constant.Event.TOUCH_DOWN:
+                        self.windowShow()
+                    elif xevent.type == constant.Event.TOUCH_UP:
+                        self.windowHide()
+                    elif xevent.type == constant.Event.TABLET_TOOL_PROXIMITY:
+                        tool = xevent.get_tablet_tool_event()
+                        if tool.get_proximity_state()==constant.TabletToolProximityState.IN:
+                            self.windowShow()
+                        else:
+                            self.windowHide()
+        
             except RuntimeError:
-                print(index)
-                index +=1
+                pass
 
 def windowClose():
     try:
@@ -161,7 +175,7 @@ DEFAULT_SIZE = StringVar(win)
 DEFAULT_SIZE.set(30)
 DEFAULT_SIZE.trace("w", changeSize)
 DEFAULT_ALPHA = StringVar(win)
-DEFAULT_ALPHA.set(60)
+DEFAULT_ALPHA.set(70)
 DEFAULT_ALPHA.trace("w", changeAlpha)
 DEFAULT_INTERVALL = StringVar(win)
 DEFAULT_INTERVALL.set(100)
@@ -215,7 +229,7 @@ def click_handler(*args):
 
 #Setting Activation Window
 win2 = Toplevel(win)
-win2.geometry("20x20")
+win2.geometry("30x30")
 win2.geometry("+0+0")
 win2.resizable(False, False)
 win2.attributes('-topmost',True)
