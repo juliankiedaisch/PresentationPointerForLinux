@@ -3,8 +3,12 @@ from tkinter import *
 import threading
 import time
 from tkinter.colorchooser import askcolor
+from libinput import LibInput, constant, event
+
 
 cursor = None
+global win_open
+win_open = True
 
 class Cursor ():
     def __init__(self, root):
@@ -17,6 +21,8 @@ class Cursor ():
         self.__size = 30
         self.__alpha = 0.6
         self.__intervall = 0.01
+        self.__li = LibInput()
+        self.__devices = [self.__li.path_add_device('/dev/input/event6'), self.__li.path_add_device('/dev/input/event7'), self.__li.path_add_device('/dev/input/event4')]
         
         self.__createWindow()
 
@@ -51,6 +57,8 @@ class Cursor ():
 
     def destroy(self):
         self.stop()
+        for item in self.__devices:
+            self.__li.path_remove_device(item)
         self.__destroyWindow()
 
     def start(self):
@@ -95,16 +103,25 @@ class Cursor ():
         message = None
         index = 0
         while self.__status:
-            coord = self.__display.screen().root.query_pointer()._data
-            print(1)
-            print(str(coord["root_x"]) + ":" + str(coord["root_y"]))
-            print(2)
-            self.__window.geometry("+" + str(coord["root_x"]+10) + "+" + str(coord["root_y"]+10))
-            print(3)
-            time.sleep(self.__intervall)
-            print(4)
-            print(index)
-            index +=1
+            try:
+                for xevent in self.__li.get_event(self.__intervall):
+                    if xevent.type == constant.Event.TOUCH_MOTION:
+                        tool = xevent.get_touch_event()
+                        print(str(int(tool.get_x())) + ":" + str(int(tool.get_y())))
+                        self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))
+
+                    if xevent.type == constant.Event.POINTER_MOTION_ABSOLUTE:
+                        tool = xevent.get_pointer_event()
+                        print(str(int(tool.get_x())) + ":" + str(int(tool.get_y())))
+                        self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))
+
+                    if xevent.type == constant.Event.TABLET_TOOL_AXIS:
+                        tool = xevent.get_tablet_tool_event()
+                        print(str(int(tool.get_x())) + ":" + str(int(tool.get_y())))
+                        self.__window.geometry("+" + str(int(tool.get_x()*6.7)+10) + "+" + str(int(tool.get_y()*6.7)+10))            
+            except RuntimeError:
+                print(index)
+                index +=1
 
 def windowClose():
     try:
@@ -184,7 +201,19 @@ labelColor = Label(win, text="Choose Color for Cursor: ").grid(column=0, row=3, 
 #Quit
 buttonQuit = Button(win, text='Quit', command=windowClose, bg="red").grid(column=0, row=5, sticky=E, padx=5, pady=5)
 
-#Cursor Activation Window
+
+def click_handler(*args):
+    global win_open
+    if win_open:
+        win.withdraw()
+        win_open = False
+    else:
+        win.deiconify()
+        win_open = True
+    
+
+
+#Setting Activation Window
 win2 = Toplevel(win)
 win2.geometry("20x20")
 win2.geometry("+0+0")
@@ -193,11 +222,13 @@ win2.attributes('-topmost',True)
 win2.overrideredirect(True)
 win2.configure(bg="#ffa348")
 
+win2.bind("<Button>", click_handler)
+
 #Setting the geometry of window
 cursor = Cursor(win)
 cursor.start()
 
-win.protocol("WM_DELETE_WINDOW", windowClose)
+win.protocol("WM_DELETE_WINDOW", click_handler)
 win.mainloop()
 
 cursor.destroy()
