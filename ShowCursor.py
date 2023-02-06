@@ -1,9 +1,11 @@
 from Xlib import display
 from tkinter import *
 import threading
-import time
+import time, os
 from tkinter.colorchooser import askcolor
 from libinput import LibInput, constant, event
+
+os.system("xhost +si:localuser:$USER")
 
 
 cursor = None
@@ -22,7 +24,8 @@ class Cursor ():
         self.__alpha = 0.6
         self.__intervall = 0.01
         self.__li = LibInput()
-        self.__devices = [self.__li.path_add_device('/dev/input/event6'), self.__li.path_add_device('/dev/input/event7'), self.__li.path_add_device('/dev/input/event4')]
+        #get the devices by:  cat /proc/bus/input/devices
+        self.__devices = [self.__li.path_add_device('/dev/input/event14'), self.__li.path_add_device('/dev/input/event13')]
         
         self.__createWindow()
 
@@ -142,6 +145,7 @@ def windowClose():
         cursor.destroy()
         win2.destroy()
         win.destroy()
+        self.root.Quit()
     except:
         pass
 
@@ -229,7 +233,7 @@ def click_handler(*args):
 
 #Setting Activation Window
 win2 = Toplevel(win)
-win2.geometry("50x30")
+win2.geometry("50x25")
 win2.geometry("+0+0")
 win2.resizable(False, False)
 win2.attributes('-topmost',True)
@@ -245,5 +249,3 @@ cursor.start()
 win.protocol("WM_DELETE_WINDOW", click_handler)
 win.withdraw()
 win.mainloop()
-
-cursor.destroy()
