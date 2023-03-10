@@ -4,6 +4,25 @@ import threading
 import time, os
 from tkinter.colorchooser import askcolor
 from libinput import LibInput, constant, event
+import subprocess, re
+
+
+def getDevices():
+    output = subprocess.Popen("cat /proc/bus/input/devices", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output.wait()
+    out,err = output.communicate()
+    result = re.split(r'\s', str(out))
+    pen=None
+    finger=None
+    index = 0
+    for elem in result:
+        if elem=="mouse2":
+            pen=index-1
+        if elem=="mouse3":
+            finger=index-1
+        index+=1
+    return ["/dev/input/" + result[pen].split("=")[1], "/dev/input/" + result[finger].split("=")[1]]
+
 
 os.system("xhost +si:localuser:$USER")
 
@@ -25,8 +44,10 @@ class Cursor ():
         self.__intervall = 0.01
         self.__li = LibInput()
         #get the devices by:  cat /proc/bus/input/devices
-        self.__devices = [self.__li.path_add_device('/dev/input/event14'), self.__li.path_add_device('/dev/input/event13')]
-        
+        self.__devices = []
+        for elem in getDevices():
+            self.__devices.append(self.__li.path_add_device(elem))
+
         self.__createWindow()
 
     def __createWindow(self):
