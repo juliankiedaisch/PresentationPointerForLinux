@@ -12,16 +12,15 @@ def getDevices():
     output.wait()
     out,err = output.communicate()
     result = re.split(r'\s', str(out))
-    pen=None
-    finger=None
+    mouses = ["mouse0", "mouse1","mouse2","mouse3","mouse4","mouse5","mouse6","mouse7","mouse8"]
+    devices = []
     index = 0
     for elem in result:
-        if elem=="mouse2":
-            pen=index-1
-        if elem=="mouse3":
-            finger=index-1
+        if elem in mouses:
+            devices.append("/dev/input/" + result[index-1].split("=")[1])
         index+=1
-    return ["/dev/input/" + result[pen].split("=")[1], "/dev/input/" + result[finger].split("=")[1]]
+    
+    return devices
 
 
 os.system("xhost +si:localuser:$USER")
